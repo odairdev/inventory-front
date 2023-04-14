@@ -1,23 +1,34 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import Login from '../views/Login.vue'
+import Dashboard from '../views/Dashboard.vue'
+import Orders from '../views/Orders.vue'
+import Products from '../views/Products.vue'
+import Store from '../store/index'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
-    name: 'home',
-    component: HomeView
+    name: 'login',
+    component: Login
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
+    path: '/dashboard',
+    name: 'dashboard',
+    component: Dashboard
+  },
+  {
+    path: '/dashboard/orders',
+    name: 'orders',
+    component: Orders
+  },
+  {
+    path: '/dashboard/products',
+    name: 'products',
+    component: Products
+  },
 ]
 
 const router = new VueRouter({
@@ -25,5 +36,25 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 })
+
+router.beforeEach((to, from, next) => {
+  let loggedUser = false
+  if(localStorage.getItem("@keener_inventory_user")) {
+   loggedUser = true 
+  }
+  
+  if(loggedUser) {
+    if(to.path === '/') {
+      next('/dashboard')
+    } else {
+      next()
+    }
+  } else if(to.path != '/') {
+    next('/')
+  } else {
+    next()
+  }
+  
+}) 
 
 export default router
