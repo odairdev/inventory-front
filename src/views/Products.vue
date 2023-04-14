@@ -129,7 +129,7 @@
               <v-icon small @click="deleteProduct(item)"> mdi-delete </v-icon>
             </template>
             <template v-slot:no-data>
-              <v-btn color="primary" @click="initialize"> Reset </v-btn>
+              <p class="display-1 my-1">Nenhuma produto cadastrado.</p>
             </template>
           </v-data-table>
         </v-col>
