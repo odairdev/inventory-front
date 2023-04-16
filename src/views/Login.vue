@@ -3,6 +3,11 @@
     <v-content>
       <v-container class="fill-height" fluid>
         <v-row align="center" justify="center">
+          <error-modal
+            :message="errorMessage"
+            :active="errorDialog"
+            @closeDialog="errorDialog = false"
+          />
           <v-col cols="12" sm="8" md="8">
             <v-card class="elevation-12">
               <v-window v-model="step" :value="1">
@@ -16,13 +21,30 @@
                           Conecte-se ao Keener Inventory
                         </h1>
                         <div class="text-center mt-4">
-                          <v-btn fab color="blue" outlined @click="noFunctionalButton">
+                          <v-btn
+                            fab
+                            color="blue"
+                            outlined
+                            @click="noFunctionalButton"
+                          >
                             <v-icon>fab fa-facebook-f</v-icon>
                           </v-btn>
-                          <v-btn fab color="blue" class="ml-2" outlined @click="noFunctionalButton">
+                          <v-btn
+                            fab
+                            color="blue"
+                            class="ml-2"
+                            outlined
+                            @click="noFunctionalButton"
+                          >
                             <v-icon>fab fa-google-plus-g</v-icon>
                           </v-btn>
-                          <v-btn fab color="blue" class="ml-2" outlined @click="noFunctionalButton">
+                          <v-btn
+                            fab
+                            color="blue"
+                            class="ml-2"
+                            outlined
+                            @click="noFunctionalButton"
+                          >
                             <v-icon>fab fa-linkedin-in</v-icon>
                           </v-btn>
                         </div>
@@ -62,7 +84,8 @@
                       <v-card-text class="white--text mt-12">
                         <h1 class="text-center display-1">Olá, Visitante!</h1>
                         <h4 class="text-center mt-1">
-                          Registre-se utilizando seu email e comece a utilizar o sistema
+                          Registre-se utilizando seu email e comece a utilizar o
+                          sistema
                         </h4>
                       </v-card-text>
                       <div class="text-center mb-2">
@@ -79,7 +102,8 @@
                       <v-card-text class="white--text mt-12">
                         <h1 class="text-center display-1">Seja Bem-vindo !</h1>
                         <h4 class="text-center">
-                          Se já possui uma conta, por favor clique no botão abaixo
+                          Se já possui uma conta, por favor clique no botão
+                          abaixo
                         </h4>
                       </v-card-text>
                       <div class="text-center mb-3">
@@ -96,13 +120,31 @@
                           Criar Conta
                         </h1>
                         <div class="text-center mt-4">
-                          <v-btn class="mx-2" fab color="blue" outlined @click="noFunctionalButton">
+                          <v-btn
+                            class="mx-2"
+                            fab
+                            color="blue"
+                            outlined
+                            @click="noFunctionalButton"
+                          >
                             <v-icon>fab fa-facebook-f</v-icon>
                           </v-btn>
-                          <v-btn class="mx-2" fab color="blue" outlined @click="noFunctionalButton">
+                          <v-btn
+                            class="mx-2"
+                            fab
+                            color="blue"
+                            outlined
+                            @click="noFunctionalButton"
+                          >
                             <v-icon>fab fa-google-plus-g</v-icon>
                           </v-btn>
-                          <v-btn class="mx-2" fab color="blue" outlined @click="noFunctionalButton">
+                          <v-btn
+                            class="mx-2"
+                            fab
+                            color="blue"
+                            outlined
+                            @click="noFunctionalButton"
+                          >
                             <v-icon>fab fa-linkedin-in</v-icon>
                           </v-btn>
                         </div>
@@ -161,9 +203,17 @@
 </template>
 
 <script>
+import errorModal from "../components/errorModal.vue";
+import * as yup from "yup";
+
 export default {
+  components: {
+    errorModal,
+  },
   data() {
     return {
+      errorDialog: false,
+      errorMessage: "",
       step: 1,
       email: "",
       password: "",
@@ -180,11 +230,30 @@ export default {
         password: this.password,
       };
 
+      const schema = yup.object({
+        email: yup
+          .string()
+          .email("Precisa ser um email valído.")
+          .required("Campo de Email vazio"),
+        password: yup
+          .string()
+          .min(6, "Senha precisa conter pelo menos 6 digitos")
+          .required("Senha invalída"),
+      });
+
       try {
-        await this.$store.dispatch("login", user);
+        await schema.validate(user);
       } catch (err) {
+        this.errorDialog = true;
+        this.errorMessage = `${err
+          .toString()
+          .replace("ValidationError: ", "")}`;
+        return;
       }
 
+      try {
+        await this.$store.dispatch("login", user);
+      } catch (err) {}
     },
     async signup() {
       const user = {
@@ -193,10 +262,32 @@ export default {
         password: this.password,
       };
 
+      const schema = yup.object({
+        name: yup.string().required('Campo Nome vazio.'),
+        email: yup
+          .string()
+          .email("Precisa ser um email valído.")
+          .required("Campo de Email vazio."),
+        password: yup
+          .string()
+          .min(6, "Senha precisa conter pelo menos 6 digitos")
+          .required("Senha invalída"),
+      });
+
+      try {
+        await schema.validate(user);
+      } catch (err) {
+        this.errorDialog = true;
+        this.errorMessage = `${err
+          .toString()
+          .replace("ValidationError: ", "")}`;
+        return;
+      }
+
       try {
         await this.$http.post("users", user);
         alert("Usuário criado com sucesso");
-        this.password = ''
+        this.password = "";
         this.step = 1;
       } catch (err) {
         const errorMessage =
@@ -215,8 +306,8 @@ export default {
     },
 
     noFunctionalButton() {
-      alert('Funcionalidade ainda não disponivel.')
-    }
+      alert("Funcionalidade ainda não disponivel.");
+    },
   },
 };
 </script>

@@ -26,7 +26,8 @@ export default {
 
       } catch (err) {
         const errorMessage = err.response.data.error;
-        alert(errorMessage);
+        console.log(errorMessage)
+        alert('Senha Invalída');
       }
     },
 
