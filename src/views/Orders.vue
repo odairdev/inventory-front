@@ -24,9 +24,21 @@
                     ]"
                     item-text="text"
                     item-value="value"
+                    item-color="secondary"
                     v-model="order.type"
                     label="Tipo"
-                  ></v-select>
+                  >
+                    <template v-slot:item="{ item }">
+                      <span
+                        :class="
+                          item.value == 'in'
+                            ? 'green--text lighten-1'
+                            : 'red--text lighten-1'
+                        "
+                        >{{ item.text }}</span
+                      >
+                    </template>
+                  </v-select>
                 </v-col>
 
                 <v-col cols="12" sm="12" md="6" lg="4">
@@ -55,6 +67,12 @@
             </v-card>
           </v-card>
         </v-col>
+
+        <error-modal
+          :active="errorDialog"
+          @closeDialog="errorDialog = false"
+          :message="errorMessage"
+        />
       </v-row>
       <v-row justify="center">
         <v-col cols="12" sm="10" md="10" lg="10">
@@ -150,13 +168,20 @@
 </template>
 
 <script>
+import ErrorModal from "../components/errorModal.vue";
+
 export default {
   async created() {
     await this.initialize();
   },
+  components: {
+    ErrorModal,
+  },
   data() {
     return {
       dialog: false,
+      errorDialog: false,
+      errorMessage: "",
       order: {
         productId: "",
         type: "",
@@ -219,6 +244,18 @@ export default {
   },
   methods: {
     async addOrder() {
+      const product = this.products.find(
+        (product) => product.id === this.order.productId
+      );
+
+      const productAmountAvailable = product.amount > this.order_amount;
+
+      if (!productAmountAvailable) {
+        this.errorMessage = `Quantidade disponivel do produto em estoque é de ${product.amount},\na quantidade da ordem foi de ${this.order.order_amount}.`;
+        this.errorDialog = true;
+        return;
+      }
+
       try {
         await this.$http.post("inventory", this.order);
         alert("Ordem cadastrada com sucesso.");
