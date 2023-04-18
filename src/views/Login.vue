@@ -306,7 +306,8 @@ export default {
     },
 
     noFunctionalButton() {
-      alert("Funcionalidade ainda não disponivel.");
+      this.errorDialog = true,
+      this.errorMessage = "Funcionalidade ainda não disponivel."
     },
   },
 };
